@@ -4,7 +4,7 @@ printf 'Installing Kyanite Black, this may take a while ...\n'
 
 ARCH="$(uname -m)"
 
-echo -e "\nArch detected as $ARCH. If it's wrong, stop the script and fix it ..."
+printf '\nArch detected as %s. If it'\''s wrong, stop the script and fix it ...\n' "$ARCH"
 
 sleep 7
 
@@ -25,13 +25,17 @@ assert() {
         : > "$status_file"
     ) &
 
-    width=24                                                                                filled=0
+    width=24
+    filled=0
 
-    while [ ! -e "$status_file" ]; do                                                           filled=$(( (filled + 1) % (width + 1) ))
+    while [ ! -e "$status_file" ]; do
+        filled=$(( (filled + 1) % (width + 1) ))
         bar=""
-        i=0                                                                                     while [ "$i" -lt "$width" ]; do
+        i=0
+        while [ "$i" -lt "$width" ]; do
             if [ "$i" -lt "$filled" ]; then
-                bar="${bar}━"                                                                       else
+                bar="${bar}━"
+            else
                 bar="${bar}─"
             fi
             i=$((i + 1))
@@ -39,7 +43,8 @@ assert() {
         printf '\r\033[2K[%s] Testing...' "$bar"
         sleep 1
     done
-                                                                                            # Sin grep ni wait: match de subcadena literal vía glob de case.
+
+    # Sin grep ni wait: match de subcadena literal vía glob de case.
     output=$(cat "$result")
 
     case "$output" in
@@ -115,9 +120,9 @@ assert '<title>Example Domain</title>' curl https://example.com/
 
 
 printf '\nInstalling crunch. Wordlist generator of all possible combinations and permutations from a charset ...\n'
-if [[ "$ARCH" == "aarch64" ]]; then
+if [ "$ARCH" = "aarch64" ]; then
     URL="https://github.com/StringManolo/Kyanite-Black/releases/download/crunch/crunch_64"
-elif [[ "$ARCH" == "x86_64" ]]; then
+elif [ "$ARCH" = "x86_64" ]; then
     URL="https://github.com/StringManolo/Kyanite-Black/releases/download/crunch/crunch_x86_64"
 else
     URL="https://github.com/StringManolo/Kyanite-Black/releases/download/crunch/crunch_32"
