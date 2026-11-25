@@ -2,11 +2,18 @@
 
 printf 'Installing Kyanite Black, this may take a while ...\n'
 
-printf '\nSetting up test helpers ...\n'                                                
+ARCH="$(uname -m)"
+
+echo -e "\nArch detected as $ARCH. If it's wrong, stop the script and fix it ..."
+
+sleep 7
+
+printf '\nSetting up test helpers ...\n'
 
 assert() {
     expected="$1"
-    shift                                                                               
+    shift
+
     tmp="${TMPDIR:-/tmp}/kyanite-assert-$$"
     result="$tmp.output"
     status_file="$tmp.status"
@@ -19,23 +26,22 @@ assert() {
         "$@" > "$result" 2>&1
         : > "$status_file"
     ) &
-                                                                                            width=24
-    filled=0
 
-    while [ ! -e "$status_file" ]; do
-        filled=$(( (filled + 1) % (width + 1) ))
+    width=24                                                                                filled=0
+
+    while [ ! -e "$status_file" ]; do                                                           filled=$(( (filled + 1) % (width + 1) ))
         bar=""
-        i=0
-        while [ "$i" -lt "$width" ]; do
+        i=0                                                                                     while [ "$i" -lt "$width" ]; do
             if [ "$i" -lt "$filled" ]; then
                 bar="${bar}━"                                                                       else
                 bar="${bar}─"
-            fi                                                                                      i=$((i + 1))
+            fi
+            i=$((i + 1))
         done
-        printf '\r\033[2K[%s] Testing...' "$bar"                                                sleep 1
+        printf '\r\033[2K[%s] Testing...' "$bar"
+        sleep 1
     done
-
-    # Sin grep ni wait: match de subcadena literal vía glob de case.
+                                                                                            # Sin grep ni wait: match de subcadena literal vía glob de case.
     output=$(cat "$result")
 
     case "$output" in
@@ -92,7 +98,7 @@ COMMIX_HOME=/KyaniteBlack/commix
 cd "$COMMIX_HOME"
 exec python3 commix.py "$@"
 WRAP
-chmod +x /bin/commix
+#chmod +x /bin/commix
 
 printf '\nTesting commix against https://kyanite-black-lab.netlify.app ...\n'
 
@@ -105,6 +111,27 @@ printf '\nTesting commix against https://kyanite-black-lab.netlify.app ...\n'
 #    --batch \
 #    -v 1
 
+printf '\nInstalling curl. Command line tool for transferring data ...\n'
+# kpkg add curl
+# assert '<title>Example Domain</title>' curl https://example.com/
+
+
+printf '\nInstalling crunch. Wordlist generator of all possible combinations and permutations from a charset ...\n'
+if [[ "$ARCH" == "aarch64" ]]; then
+    URL="https://github.com/StringManolo/Kyanite-Black/releases/download/crunch/crunch_64"
+elif [[ "$ARCH" == "x86_64" ]]; then
+    URL="https://github.com/StringManolo/Kyanite-Black/releases/download/crunch/crunch_x86_64"
+else
+    URL="https://github.com/StringManolo/Kyanite-Black/releases/download/crunch/crunch_32"
+fi
+#curl -sfL "$URL" -o crunch
+#chmod +x crunch
+#ln -sf "$(pwd)/crunch" /usr/local/bin/crunch
+
+#assert 'Crunch will now generate the following number of lines: 7' crunch 1 1 Kyanite
+
+# TODO: COMPILE FOR THE 3 ARCHS FROM THE WORKFLOW THAT GENERATES THE ROOTFS, DISABLE PREVIOUS METHOD
+# git clone https://github.com/crunchsec/crunch
 
 # TODO:
 # - Add auto update of commix
