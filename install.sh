@@ -20,8 +20,6 @@ assert() {
 
     rm -f "$result" "$status_file"
 
-    # El centinela se crea SOLO después de que el comando termina
-    # y su fd sobre $result se ha cerrado → el archivo está completo.
     (
         "$@" > "$result" 2>&1
         : > "$status_file"
@@ -67,26 +65,26 @@ printf '\nUsing /KyaniteBlack the working folder ...\n'
 cd /KyaniteBlack || exit 1
 
 printf '\nDownloading list of available packages ...\n'
-# kpkg update
+kpkg update
 
 printf '\nUpgrading already installed packages to the last version ...\n'
-# kpkg upgrade
+kpkg upgrade
 
 printf '\nInstalling git to download packages ...\n'
-# kpkg add git
+kpkg add git
 
 printf '\nInstalling python3-pip ...\n'
-# kpkg add python3-pip
+kpkg add python3-pip
 
 printf '\nInstalling arjun. HTTP parameter discovery suite ...\n'
-# pip3 install arjun --break-system-packages
+pip3 install arjun --break-system-packages
 
 printf '\nTesting arjun against https://kyanite-black-lab.netlify.app ...\n'
-#assert 'parameter detected: category, based on: body length' \
-#  arjun -u 'https://kyanite-black-lab.netlify.app/api/search' -t 50
+assert 'parameter detected: category, based on: body length' \
+  arjun -u 'https://kyanite-black-lab.netlify.app/api/search' -t 50
 
 printf '\nInstalling commix. Automated All-in-One OS command injection exploitation tool ...\n'
-# git clone https://github.com/commixproject/commix.git commix
+git clone https://github.com/commixproject/commix.git commix
 
 printf '\nInstalling commix wrapper in /bin ...\n'
 
@@ -98,22 +96,22 @@ COMMIX_HOME=/KyaniteBlack/commix
 cd "$COMMIX_HOME"
 exec python3 commix.py "$@"
 WRAP
-#chmod +x /bin/commix
+chmod +x /bin/commix
 
 printf '\nTesting commix against https://kyanite-black-lab.netlify.app ...\n'
 
-#assert 'Payload: 127.0.0.1;printf %s\\40 AOQQEX$((88+78))$(printf AOQQEX)AOQQEX;' \
-#  commix \
-#    --url="https://kyanite-black-lab.netlify.app/api/commix?host=127.0.0.1" \
-#    --os="Unix-like" \
-#    --technique=r \
-#    --skip-heuristics \
-#    --batch \
-#    -v 1
+assert 'Payload: 127.0.0.1;printf %s\\40 AOQQEX$((88+78))$(printf AOQQEX)AOQQEX;' \
+  commix \
+    --url="https://kyanite-black-lab.netlify.app/api/commix?host=127.0.0.1" \
+    --os="Unix-like" \
+    --technique=r \
+    --skip-heuristics \
+    --batch \
+    -v 1
 
 printf '\nInstalling curl. Command line tool for transferring data ...\n'
-# kpkg add curl
-# assert '<title>Example Domain</title>' curl https://example.com/
+kpkg add curl
+assert '<title>Example Domain</title>' curl https://example.com/
 
 
 printf '\nInstalling crunch. Wordlist generator of all possible combinations and permutations from a charset ...\n'
@@ -124,15 +122,16 @@ elif [[ "$ARCH" == "x86_64" ]]; then
 else
     URL="https://github.com/StringManolo/Kyanite-Black/releases/download/crunch/crunch_32"
 fi
-#curl -sfL "$URL" -o crunch
-#chmod +x crunch
-#ln -sf "$(pwd)/crunch" /usr/local/bin/crunch
+curl -sfL "$URL" -o crunch
+chmod +x crunch
+ln -sf "$(pwd)/crunch" /usr/local/bin/crunch
 
-#assert 'Crunch will now generate the following number of lines: 7' crunch 1 1 Kyanite
+assert 'Crunch will now generate the following number of lines: 7' crunch 1 1 Kyanite
 
 # TODO: COMPILE FOR THE 3 ARCHS FROM THE WORKFLOW THAT GENERATES THE ROOTFS, DISABLE PREVIOUS METHOD
-# git clone https://github.com/crunchsec/crunch
+#git clone https://github.com/crunchsec/crunch
 
 # TODO:
 # - Add auto update of commix
 # - Check if netlify reachable, if not, run instance localy
+# - Upagrade version manually, download MOTD, etc
