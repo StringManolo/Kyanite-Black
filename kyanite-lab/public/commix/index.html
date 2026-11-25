@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Commix Command Injection Simulator · Kyanite Lab</title>
+  <style>
+    :root { color-scheme:dark; font:16px system-ui,sans-serif; }
+    body { max-width:850px; margin:3rem auto; padding:0 1.2rem; background:#10151d; color:#e7edf5; }
+    p,small { color:#aab8ca; }
+    pre,codebox { display:block; overflow:auto; padding:1rem; background:#192331; border:1px solid #304155; border-radius:10px; white-space:pre-wrap; }
+    code { color:#9bd1ff; }
+    a { color:#9bd1ff; }
+    button { padding:.65rem 1rem; border:0; border-radius:7px; background:#2563eb; color:white; cursor:pointer; }
+    input { box-sizing:border-box; width:100%; padding:.7rem; margin:.4rem 0 1rem; border-radius:7px; border:1px solid #50647b; background:#0f1722; color:white; }
+    .note { border-left:3px solid #e0a33b; padding:.7rem 1rem; background:#211f1a; }
+  </style>
+</head>
+<body>
+  <p><a href="/">← Kyanite Lab</a></p>
+  <h1>Commix Command Injection Simulator</h1>
+  <p>This public endpoint emulates a tiny fake Linux shell. It does not execute operating-system commands.</p>
+  <p class="note"><strong>Simulation:</strong> selected harmless commands return predefined output. Unsupported commands return no output. Time-based injection is not simulated.</p>
+
+  <h2>Try it in your browser</h2>
+  <form id="test">
+    <label for="host">host parameter</label>
+    <input id="host" value="127.0.0.1;id">
+    <button>Send request</button>
+  </form>
+  <pre id="output">Response will appear here.</pre>
+
+  <h2>Test with Commix</h2>
+  <p>Use the endpoint below as the target URL:</p>
+  <pre id="target">https://YOUR-SITE.netlify.app/api/commix?host=127.0.0.1</pre>
+  <p>Example command:</p>
+  <pre>commix --url="https://YOUR-SITE.netlify.app/api/commix?host=127.0.0.1"</pre>
+
+  <h2>Simulated environment</h2>
+  <p>Recognized commands include <code>id</code>, <code>whoami</code>, <code>uname</code>, <code>pwd</code>, <code>hostname</code>, <code>ls</code>, <code>cat /etc/passwd</code>, <code>cat /etc/os-release</code>, <code>echo</code>, and <code>printf</code>.</p>
+
+  <script>
+    const form = document.querySelector("#test");
+    const host = document.querySelector("#host");
+    const output = document.querySelector("#output");
+    const target = document.querySelector("#target");
+    const base = `${location.origin}/api/commix`;
+    function updateTarget() {
+      target.textContent = `${base}?host=${encodeURIComponent(host.value)}`;
+    }
+    host.addEventListener("input", updateTarget);
+    updateTarget();
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      updateTarget();
+      output.textContent = "Loading...";
+      try {
+        const response = await fetch(`${base}?host=${encodeURIComponent(host.value)}`);
+        output.textContent = await response.text();
+      } catch (error) {
+        output.textContent = String(error);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arjun Parameter Playground · Kyanite Lab</title>
+  <style>
+    :root { color-scheme: dark; font: 16px system-ui, sans-serif; }
+    body { max-width:850px; margin:3rem auto; padding:0 1.2rem; background:#10151d; color:#e7edf5; }
+    p,small { color:#aab8ca; }
+    form,pre { background:#192331; border:1px solid #304155; border-radius:12px; padding:1rem; }
+    label { display:block; margin:.8rem 0 .25rem; }
+    input,select,button { box-sizing:border-box; width:100%; padding:.7rem; border-radius:7px; border:1px solid #50647b; background:#0f1722; color:#fff; }
+    button { margin-top:1rem; background:#2563eb; border:0; cursor:pointer; font-weight:700; }
+    pre { overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; min-height:5rem; }
+    code { color:#9bd1ff; }
+    a { color:#9bd1ff; }
+  </style>
+</head>
+<body>
+  <p><a href="/">← Kyanite Lab</a></p>
+  <h1>Arjun Parameter Playground</h1>
+  <p>A training target for HTTP parameter discovery with Arjun.</p>
+  <form id="searchForm">
+    <label for="q">q</label><input id="q" name="q" value="arjun">
+    <label for="category">category</label>
+    <select id="category" name="category"><option>all</option><option>web</option><option>security</option></select>
+    <label for="page">page</label><input id="page" name="page" type="number" value="1">
+    <label for="sort">sort</label>
+    <select id="sort" name="sort"><option>relevance</option><option>date</option></select>
+    <button>Send request</button>
+  </form>
+  <h2>Server response</h2>
+  <pre id="result">Submit a query to see the response.</pre>
+  <p><small>Endpoint: <code>/api/search</code>. Supported parameters: q, query, search, category, page, sort, lang, debug, id, limit.</small></p>
+  <script>
+    const form = document.querySelector("#searchForm");
+    const result = document.querySelector("#result");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const params = new URLSearchParams(new FormData(form));
+      try {
+        const response = await fetch(`/api/search?${params}`);
+        result.textContent = JSON.stringify(await response.json(), null, 2);
+      } catch (error) {
+        result.textContent = String(error);
+      }
+    });
+  </script>
+</body>
+</html>

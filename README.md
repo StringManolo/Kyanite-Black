@@ -1,4 +1,4 @@
 # Kyanite-Black
-Cibersecurity Linux Distro for Android
+Cibersecurity Linux Distro
 
-> This repo is a placeholder for future work.
+This project is in development, come again later. :)
