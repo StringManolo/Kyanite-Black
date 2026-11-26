@@ -107,13 +107,14 @@ chmod +x /bin/commix
 
 printf '\nTesting commix against https://kyanite-black-lab.netlify.app ...\n'
 
-assert 'Payload: 127.0.0.1;printf %s\\40 AOQQEX$((88+78))$(printf AOQQEX)AOQQEX;' \
+assert "appears to be injectable via results-based classic command injection technique" \
   commix \
    --url="https://kyanite-black-lab.netlify.app/api/commix?host=127.0.0.1" \
    --os="Unix-like" \
    --technique=r \
    --skip-heuristics \
    --batch \
+   --flush-session \
    -v 1
 
 printf '\nInstalling curl. Command line tool for transferring data ...\n'
@@ -121,7 +122,9 @@ printf '\nInstalling curl. Command line tool for transferring data ...\n'
 assert '<title>Example Domain</title>' curl https://example.com/
 
 
+
 printf '\nInstalling crunch. Wordlist generator of all possible combinations and permutations from a charset ...\n'
+
 if [[ "$ARCH" == "aarch64" ]]; then
     URL="https://github.com/StringManolo/Kyanite-Black/releases/download/crunch/crunch_64"
 elif [[ "$ARCH" == "x86_64" ]]; then
@@ -129,11 +132,21 @@ elif [[ "$ARCH" == "x86_64" ]]; then
 else
     URL="https://github.com/StringManolo/Kyanite-Black/releases/download/crunch/crunch_32"
 fi
-curl -sfL "$URL" -o crunch
-chmod +x crunch
-ln -sf "$(pwd)/crunch" /usr/local/bin/crunch
+
+curl -sfL "$URL" -o /usr/local/bin/crunch.bin
+chmod +x /usr/local/bin/crunch.bin
+
+cat > /usr/local/bin/crunch <<'WRAPPER'
+#!/usr/bin/env sh
+export LC_ALL=C
+exec /usr/local/bin/crunch.bin "$@"
+WRAPPER
+
+chmod +x /usr/local/bin/crunch
 
 assert 'Crunch will now generate the following number of lines: 7' crunch 1 1 Kyanite
+
+
 
 # TODO: COMPILE FOR THE 3 ARCHS FROM THE WORKFLOW THAT GENERATES THE ROOTFS, DISABLE PREVIOUS METHOD 
 # git clone https://github.com/crunchsec/crunch
