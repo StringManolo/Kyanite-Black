@@ -72,10 +72,10 @@ printf '\nUsing /KyaniteBlack the working folder ...\n'
 cd /KyaniteBlack || exit 1
 
 printf '\nDownloading list of available packages ...\n'
-# kpkg update
+kpkg update
 
 printf '\nUpgrading already installed packages to the last version ...\n'
-# kpkg upgrade
+kpkg upgrade
 
 printf '\nInstalling git to download packages ...\n'
 kpkg add git
