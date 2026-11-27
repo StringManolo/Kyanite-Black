@@ -139,8 +139,6 @@ printf '%sInstalling security tools and running tests...%s\n\n' "$GRAY" "$RESET"
 ARCH="$(uname -m)"
 
 info "Detected architecture: $ARCH"
-info "Starting installation in 7 seconds..."
-sleep 7
 
 # Prepare working directory.
 info "Preparing /KyaniteBlack..."
@@ -311,6 +309,117 @@ WRAPPER
     fi
 else
     error "Crunch download failed."
+fi
+
+# Install dig.
+info "Installing DNS utilities..."
+
+if run_logged kpkg add bind9-dnsutils; then
+    success "DNS utilities installed."
+
+    info "Testing dig against Google DNS..."
+    assert '8.8.4.4' dig dns.google +short
+else
+    error "DNS utilities installation failed. Skipping dig test."
+fi
+
+# Install Feroxbuster dependencies.
+info "Installing Feroxbuster dependencies..."
+
+if run_logged kpkg add unzip fontconfig gawk; then
+    success "Feroxbuster dependencies installed."
+else
+    error "Feroxbuster dependencies installation failed."
+fi
+
+# Select Feroxbuster architecture.
+info "Selecting Feroxbuster architecture..."
+
+case "$ARCH" in
+    aarch64)
+        FEROX_ARCHIVE="aarch64-linux-feroxbuster.zip"
+        ;;
+    x86_64)
+        FEROX_ARCHIVE="x86_64-linux-feroxbuster.zip"
+        ;;
+    *)
+        error "Feroxbuster does not support architecture: $ARCH"
+        FEROX_ARCHIVE=""
+        ;;
+esac
+
+# Download and install Feroxbuster.
+if [ -n "$FEROX_ARCHIVE" ]; then
+    FEROX_URL="https://github.com/epi052/feroxbuster/releases/latest/download/$FEROX_ARCHIVE"
+
+    info "Downloading Feroxbuster..."
+
+    if run_logged curl -fL "$FEROX_URL" -o "$FEROX_ARCHIVE"; then
+        if run_logged unzip -o "$FEROX_ARCHIVE"; then
+            rm -f "$FEROX_ARCHIVE"
+
+            if run_logged mv feroxbuster /bin/feroxbuster &&
+               run_logged chmod +x /bin/feroxbuster; then
+
+                success "Feroxbuster installed."
+
+                info "Preparing Feroxbuster test wordlist..."
+
+                if cat > /tmp/ferox-lab-wordlist.txt <<'EOF'
+admin
+login
+robots.txt
+api
+api/
+api/v1/users
+api/v1/status
+api/v1/keys
+backup
+backup/
+backup.zip
+.git
+.git/config
+server-status
+config.php
+old-panel
+private
+uploads
+dashboard
+test
+EOF
+                then
+                    success "Feroxbuster wordlist prepared."
+
+                    info "Testing Feroxbuster against the Kyanite Black lab..."
+
+                    assert 'FEROX_HTTP_200_OK' sh -c '
+                        feroxbuster \
+                            -u https://kyanite-black-lab.netlify.app/ferox-lab/ \
+                            -w /tmp/ferox-lab-wordlist.txt \
+                            -s 200,301,401,403 \
+                            -t 10 \
+                            --no-state 2>&1 |
+                        awk '\''$1 == "200" && $0 ~ /\/backup\.zip([[:space:]]|$)/ {
+                            found=1
+                        }
+                        END {
+                            if (found) print "FEROX_HTTP_200_OK"
+                        }'\''
+                    '
+                else
+                    ERROR_FOUND=true
+                    error "Could not create Feroxbuster wordlist."
+                fi
+            else
+                error "Feroxbuster binary installation failed."
+            fi
+        else
+            error "Could not extract Feroxbuster archive."
+            rm -f "$FEROX_ARCHIVE"
+        fi
+    else
+        error "Feroxbuster download failed."
+    fi
 fi
 
 # Final result.
